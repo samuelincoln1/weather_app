@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lottie/lottie.dart';
 import 'package:weather_app/models/weather_model.dart';
 import 'package:weather_app/services/weather_service.dart';
@@ -12,7 +13,15 @@ class WeatherView extends StatefulWidget {
 }
 
 class _WeatherViewState extends State<WeatherView> {
-  final _weatherService = WeatherService("89bdf6b34b40a76f051e9289c7e32d9d");
+
+  late String _apiKey;
+  late WeatherService _weatherService;
+
+  Future<void> _initializeData() async {
+    _apiKey = dotenv.env['API_KEY'] ?? ""; // Valor padrão vazio se apiKey for nula
+    _weatherService = WeatherService(apiKey: _apiKey);
+  }
+
   Weather? _weather;
 
   void _fetchWeather() async {
@@ -55,6 +64,7 @@ class _WeatherViewState extends State<WeatherView> {
   @override
   void initState() {
     super.initState();
+    _initializeData();
     _fetchWeather();
   }
 
