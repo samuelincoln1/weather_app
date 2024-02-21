@@ -67,10 +67,9 @@ class _WeatherViewState extends State<WeatherView> {
           children: [
             Text(_weather?.preciseLocation ?? ""),
             Text(_weather?.city ?? "Carregando..."),
-
             Lottie.asset(getWeatherAnimation(_weather?.condition)),
+            Text('${_weather?.temperature != null ? '${_weather!.temperature.round()}°C' : ''} ${_weather?.conditionDescription ?? ""}'),
 
-            Text('${_weather?.temperature.round() ?? ""}°C - ${_weather?.conditionDescription ?? ""}'),
         
           ],),
       ),
