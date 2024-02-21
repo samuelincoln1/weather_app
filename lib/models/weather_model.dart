@@ -1,11 +1,12 @@
 class Weather {
   final String cidade;
-  final String temperatura;
+  String? locPrecisa;
+  final double temperatura;
   final String condicao;
-  final String temperaturaMinima;
-  final String temperaturaMaxima;
+  final double temperaturaMinima;
+  final double temperaturaMaxima;
 
-  Weather({required this.cidade, required this.temperatura, required this.condicao, required this.temperaturaMinima, required this.temperaturaMaxima});
+  Weather({required this.cidade, this.locPrecisa, required this.temperatura, required this.condicao, required this.temperaturaMinima, required this.temperaturaMaxima});
 
   factory Weather.fromJson(Map<String, dynamic> json) {
     return Weather(

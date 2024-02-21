@@ -4,6 +4,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:weather_app/models/weather_model.dart';
 import 'package:http/http.dart' as http;
+import 'dart:developer' as dev;
 
 class WeatherService {
 
@@ -13,7 +14,7 @@ class WeatherService {
   WeatherService(this.apiKey);
 
   Future<Weather> getWeather(String cidade) async {
-    final response = await http.get(Uri.parse('$baseUrl?q=$cidade&appid=$apiKey&units=metric'));
+    final response = await http.get(Uri.parse('$baseUrl?q=$cidade&appid=$apiKey&units=metric&lang={pt_br}'));
 
     if (response.statusCode == 200) {
       return Weather.fromJson(jsonDecode(response.body));
@@ -32,9 +33,34 @@ class WeatherService {
 
     List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
 
-    String? city = placemarks[0].locality;
+    dev.log(placemarks.toString());
+
+    String? city = placemarks[0].subAdministrativeArea;
 
     return city ?? "";
+
+  }
+
+  Future<String?> getPreciseLocation() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+
+    List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+
+    dev.log(placemarks.toString());
+
+    String? number = placemarks[0].name;
+    String? street = placemarks[0].street;
+
+    if (number != null && street != null) {
+      return "$street - $number";
+    } else {
+      return null;
+    }
 
   }
 
