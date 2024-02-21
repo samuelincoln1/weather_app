@@ -52,17 +52,20 @@ class WeatherService {
 
     List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
 
-    dev.log(placemarks.toString());
+    // dev.log(placemarks.toString());
 
-    String? number = placemarks[0].name;
-    String? street = placemarks[0].street;
+    // String? number = placemarks[0].name;
+    // String? street = placemarks[0].street;
+    String? loc = placemarks[0].subLocality;
     
 
-    if (number != null && street != null) {
-      return "$street - $number";
-    } else {
-      return null;
-    }
+    // if (number != null && street != null) {
+    //   return "$street - $number";
+    // } else {
+    //   return null;
+    // }
+
+    return loc;
 
   }
 
