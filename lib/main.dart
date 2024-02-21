@@ -6,11 +6,10 @@ import 'dart:developer' as dev;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-      await dotenv.load(fileName: ".env");
+      await dotenv.load(fileName: '.env');
   } catch (e) {
     dev.log(e.toString());
   }
-
   runApp(const MyApp());
 }
 

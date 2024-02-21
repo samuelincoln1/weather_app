@@ -33,7 +33,8 @@ class WeatherService {
 
     List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
 
-    dev.log(placemarks.toString());
+    // dev.log(placemarks.toString());
+     dev.log('chamado');
 
     String? city = placemarks[0].subAdministrativeArea;
 
@@ -55,6 +56,7 @@ class WeatherService {
 
     String? number = placemarks[0].name;
     String? street = placemarks[0].street;
+    
 
     if (number != null && street != null) {
       return "$street - $number";

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lottie/lottie.dart';
@@ -14,11 +16,26 @@ class WeatherView extends StatefulWidget {
 
 class _WeatherViewState extends State<WeatherView> {
 
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+    _fetchWeather();
+    // _timer = Timer.periodic(const Duration(seconds: 3), (timer) {_fetchWeather();});
+  }
+
+  @override
+  void dispose() {
+    // _timer.cancel();
+    super.dispose ();
+  }
+
   late String _apiKey;
   late WeatherService _weatherService;
+  // late Timer _timer;
 
   Future<void> _initializeData() async {
-    _apiKey = dotenv.env['API_KEY'] ?? ""; // Valor padrão vazio se apiKey for nula
+    _apiKey = dotenv.env['API_KEY'] ?? ""; 
     _weatherService = WeatherService(apiKey: _apiKey);
   }
 
@@ -37,6 +54,8 @@ class _WeatherViewState extends State<WeatherView> {
       dev.log(e.toString());
     }
   }
+
+
 
   String getWeatherAnimation(String? mainCondition) {
     if (mainCondition == null) return 'assets/sunny.json';
@@ -62,13 +81,6 @@ class _WeatherViewState extends State<WeatherView> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _initializeData();
-    _fetchWeather();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
@@ -78,7 +90,7 @@ class _WeatherViewState extends State<WeatherView> {
             Text(_weather?.preciseLocation ?? ""),
             Text(_weather?.city ?? "Carregando..."),
             Lottie.asset(getWeatherAnimation(_weather?.condition)),
-            Text('${_weather?.temperature != null ? '${_weather!.temperature.round()}°C' : ''} ${_weather?.conditionDescription ?? ""}'),
+            Text('${_weather?.temperature != null ? '${_weather!.temperature.round()}°C - ' : ''} ${_weather?.conditionDescription ?? ""}'),
 
         
           ],),
