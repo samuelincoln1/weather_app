@@ -21,7 +21,6 @@ class _WeatherViewState extends State<WeatherView> {
     _initializeData();
     _fetchWeatherCurrentLocation();
     _calculateTime(_weather?.timezone);
-
   }
 
   @override
@@ -48,15 +47,16 @@ class _WeatherViewState extends State<WeatherView> {
     DateTime nowUTC = DateTime.now().toUtc();
     int localHour = nowUTC.hour + currentTimezone;
     dev.log(localHour.toString());
-      if ((localHour >= 18 && localHour <= 23) || (localHour >= 0 && localHour <= 4)) {
-        setState(() {
-          _isNight = true;
-        });
-      } else {
-        setState(() {
-          _isNight = false;
-        });
-      }
+    if ((localHour >= 18 && localHour <= 23) ||
+        (localHour >= 0 && localHour <= 4)) {
+      setState(() {
+        _isNight = true;
+      });
+    } else {
+      setState(() {
+        _isNight = false;
+      });
+    }
     return localHour;
   }
 
@@ -90,7 +90,7 @@ class _WeatherViewState extends State<WeatherView> {
       final weather = await _weatherService.getWeather(cidade);
       setState(() {
         _weather = weather;
-         dev.log(_weather.toString());
+        dev.log(_weather.toString());
       });
     } catch (e) {
       dev.log(e.toString());
@@ -106,13 +106,13 @@ class _WeatherViewState extends State<WeatherView> {
     if (conditionID == null) return 'assets/clear_day.json';
 
     switch (conditionID) {
-      case (>800 && <803) || (>700 && < 760):
+      case (> 800 && < 803) || (> 700 && < 760):
         return 'assets/clouds.json'; //nuvers+sol
       case 803 || 804:
         return 'assets/clouds.json'; //nuvers+sol
-      case >=300 && < 600:
+      case >= 300 && < 600:
         return 'assets/rain_day.json';
-      case >=200 && <300:
+      case >= 200 && < 300:
         return 'assets/storm.json';
       case 800:
         return 'assets/clear_day.json';
@@ -137,10 +137,14 @@ class _WeatherViewState extends State<WeatherView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  OutlinedButton(
-                    onPressed: () {},
+                  Container(
+                    padding: const EdgeInsets.only(bottom: 5, left: 8, right: 8, top: 5),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.black)),
                     child: PopupMenuButton<String>(
                       surfaceTintColor: Colors.transparent,
+                      tooltip: 'Alterar local',
                       position: PopupMenuPosition.under,
                       onSelected: (String value) {
                         if (value == 'Meu local') {
@@ -169,7 +173,7 @@ class _WeatherViewState extends State<WeatherView> {
                       child: Text(
                         _weather?.city ?? "Carregando...",
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 22,
                           color: Colors.black,
                         ),
                       ),
