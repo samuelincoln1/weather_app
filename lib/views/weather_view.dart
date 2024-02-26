@@ -19,7 +19,7 @@ class _WeatherViewState extends State<WeatherView> {
   void initState() {
     super.initState();
     _initializeData();
-    _fetchWeather();
+    _fetchWeatherCurrentLocation();
     // _timer = Timer.periodic(const Duration(seconds: 3), (timer) {_fetchWeather();});
   }
 
@@ -31,6 +31,7 @@ class _WeatherViewState extends State<WeatherView> {
 
   late String _apiKey;
   late WeatherService _weatherService;
+  bool _isLoading = false;
   // late Timer _timer;
 
   Future<void> _initializeData() async {
@@ -40,7 +41,10 @@ class _WeatherViewState extends State<WeatherView> {
 
   Weather? _weather;
 
-  void _fetchWeather() async {
+  void _fetchWeatherCurrentLocation() async {
+    setState(() {
+      _isLoading = true;
+    });
     String cidade = await _weatherService.getCurrentCity();
 
     try {
@@ -51,6 +55,26 @@ class _WeatherViewState extends State<WeatherView> {
       });
     } catch (e) {
       dev.log(e.toString());
+    } finally {
+      _isLoading = false;
+    }
+  }
+
+  void _fetchWeather(String cidade) async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final weather = await _weatherService.getWeather(cidade);
+      setState(() {
+        _weather = weather;
+      });
+    } catch (e) {
+      dev.log(e.toString());
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -81,28 +105,80 @@ class _WeatherViewState extends State<WeatherView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 50),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(_weather?.city ?? "Carregando..."),
-              ],
+        child: Stack(children: [
+          if (_isLoading)
+            Container(
+              decoration: const BoxDecoration(color: Colors.grey),
+              child: const Center(child: CircularProgressIndicator()),
             ),
-            Text(_weather?.preciseLocation ?? ""),
-            Expanded(
-              child: Column(
+          Column(
+            children: [
+              const SizedBox(height: 50),
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Lottie.asset(getWeatherAnimation(_weather?.condition)),
+                  OutlinedButton(
+                    onPressed: () {},
+                    child: PopupMenuButton<String>(
+                      surfaceTintColor: Colors.transparent,
+                      position: PopupMenuPosition.under,
+                      onSelected: (String value) {
+                        if (value == 'Meu local') {
+                          _fetchWeatherCurrentLocation();
+                        } else {
+                          setState(() {
+                            _fetchWeather(value);
+                          });
+                        }
+                      },
+                      itemBuilder: (BuildContext context) =>
+                          <PopupMenuEntry<String>>[
+                        const PopupMenuItem<String>(
+                          value: 'Meu local',
+                          child: Text('Meu local'),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'São Paulo',
+                          child: Text('São Paulo'),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'Pesquisar',
+                          child: Text('Pesquisar...'),
+                        ),
+                      ],
+                      child: Text(
+                        _weather?.city ?? "Carregando...",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-            Text('${_weather?.temperature != null ? '${_weather!.temperature.round()}°C - ' : ''} ${_weather?.conditionDescription ?? ""}'),
-            const SizedBox(height: 50)
-          ],
-        ),
+              const SizedBox(height: 10),
+              Text(_weather?.preciseLocation ?? ""),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (!_isLoading)
+                      Lottie.asset(getWeatherAnimation(_weather?.condition)),
+                  ],
+                ),
+              ),
+              Text(
+                _weather?.temperature != null
+                    ? '${_weather!.temperature.round()}°C'
+                    : '',
+                style: const TextStyle(fontSize: 20),
+              ),
+              Text(' ${_weather?.conditionDescription ?? ""}'),
+              const SizedBox(height: 50)
+            ],
+          ),
+        ]),
       ),
     );
   }
