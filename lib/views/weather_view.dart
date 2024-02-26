@@ -15,7 +15,6 @@ class WeatherView extends StatefulWidget {
 }
 
 class _WeatherViewState extends State<WeatherView> {
-
   @override
   void initState() {
     super.initState();
@@ -27,7 +26,7 @@ class _WeatherViewState extends State<WeatherView> {
   @override
   void dispose() {
     // _timer.cancel();
-    super.dispose ();
+    super.dispose();
   }
 
   late String _apiKey;
@@ -35,7 +34,7 @@ class _WeatherViewState extends State<WeatherView> {
   // late Timer _timer;
 
   Future<void> _initializeData() async {
-    _apiKey = dotenv.env['API_KEY'] ?? ""; 
+    _apiKey = dotenv.env['API_KEY'] ?? "";
     _weatherService = WeatherService(apiKey: _apiKey);
   }
 
@@ -55,8 +54,6 @@ class _WeatherViewState extends State<WeatherView> {
     }
   }
 
-
-
   String getWeatherAnimation(String? mainCondition) {
     if (mainCondition == null) return 'assets/sunny.json';
 
@@ -75,7 +72,7 @@ class _WeatherViewState extends State<WeatherView> {
         return 'assets/stomry.json';
       case 'clear':
         return 'assets/sunny.json';
-      default: 
+      default:
         return 'assets/sunny.json';
     }
   }
@@ -83,17 +80,29 @@ class _WeatherViewState extends State<WeatherView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const SizedBox(height: 50),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(_weather?.city ?? "Carregando..."),
+              ],
+            ),
             Text(_weather?.preciseLocation ?? ""),
-            Text(_weather?.city ?? "Carregando..."),
-            Lottie.asset(getWeatherAnimation(_weather?.condition)),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Lottie.asset(getWeatherAnimation(_weather?.condition)),
+                ],
+              ),
+            ),
             Text('${_weather?.temperature != null ? '${_weather!.temperature.round()}°C - ' : ''} ${_weather?.conditionDescription ?? ""}'),
-
-        
-          ],),
+            const SizedBox(height: 50)
+          ],
+        ),
       ),
     );
   }
