@@ -20,7 +20,6 @@ class _WeatherViewState extends State<WeatherView> {
     super.initState();
     _initializeData();
     _fetchWeatherCurrentLocation();
-    _calculateTime(_weather?.timezone);
   }
 
   @override
@@ -42,7 +41,8 @@ class _WeatherViewState extends State<WeatherView> {
 
   // calcular horario no local escolhido, para saber se e noite
   int _calculateTime(int? timezone) {
-    if (timezone == null) return 10;
+    dev.log('calculatetime');
+    if (timezone == null) return 0;
     int currentTimezone = (timezone / 3600).round();
     DateTime nowUTC = DateTime.now().toUtc();
     int localHour = nowUTC.hour + currentTimezone;
@@ -70,6 +70,7 @@ class _WeatherViewState extends State<WeatherView> {
     try {
       final weather = await _weatherService.getWeather(cidade);
       weather.preciseLocation = await _weatherService.getPreciseLocation();
+      _calculateTime(weather.timezone);
       setState(() {
         _weather = weather;
         dev.log(_weather.toString());
@@ -88,6 +89,7 @@ class _WeatherViewState extends State<WeatherView> {
     });
     try {
       final weather = await _weatherService.getWeather(cidade);
+      _calculateTime(weather.timezone);
       setState(() {
         _weather = weather;
         dev.log(_weather.toString());
@@ -104,18 +106,22 @@ class _WeatherViewState extends State<WeatherView> {
   // carregar animacao dependendo da condicao climatica
   String getWeatherAnimation(int? conditionID) {
     if (conditionID == null) return 'assets/clear_day.json';
-
     switch (conditionID) {
-      case (> 800 && < 803) || (> 700 && < 760):
-        return 'assets/clouds.json'; //nuvers+sol
-      case 803 || 804:
-        return 'assets/clouds.json'; //nuvers+sol
+      case (> 800 && < 804) || (> 700 && < 760):
+        if (_isNight) return 'assets/clouds_and_moon.json';
+        return 'assets/clouds_and_sun.json'; //nuvens+sol
+      case 804:
+        return 'assets/clouds.json'; //nuvens
       case >= 300 && < 600:
+        if (_isNight) return 'assets/rain_night.json';
         return 'assets/rain_day.json';
       case >= 200 && < 300:
         return 'assets/storm.json';
       case 800:
+        if (_isNight) return 'assets/clear_night.json';
         return 'assets/clear_day.json';
+      case >700 && <800:
+        return 'assets/mist.json';
       default:
         return 'assets/clear_day.json';
     }
