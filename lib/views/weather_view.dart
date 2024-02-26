@@ -20,27 +20,47 @@ class _WeatherViewState extends State<WeatherView> {
     super.initState();
     _initializeData();
     _fetchWeatherCurrentLocation();
-    // _timer = Timer.periodic(const Duration(seconds: 3), (timer) {_fetchWeather();});
+    _calculateTime(_weather?.timezone);
+
   }
 
   @override
   void dispose() {
-    // _timer.cancel();
     super.dispose();
   }
 
   late String _apiKey;
   late WeatherService _weatherService;
   bool _isLoading = false;
-  // late Timer _timer;
+  bool _isNight = false;
 
+  Weather? _weather;
+  // inicializar api
   Future<void> _initializeData() async {
     _apiKey = dotenv.env['API_KEY'] ?? "";
     _weatherService = WeatherService(apiKey: _apiKey);
   }
 
-  Weather? _weather;
+  // calcular horario no local escolhido, para saber se e noite
+  int _calculateTime(int? timezone) {
+    if (timezone == null) return 10;
+    int currentTimezone = (timezone / 3600).round();
+    DateTime nowUTC = DateTime.now().toUtc();
+    int localHour = nowUTC.hour + currentTimezone;
+    dev.log(localHour.toString());
+      if ((localHour >= 18 && localHour <= 23) || (localHour >= 0 && localHour <= 4)) {
+        setState(() {
+          _isNight = true;
+        });
+      } else {
+        setState(() {
+          _isNight = false;
+        });
+      }
+    return localHour;
+  }
 
+  // carregar dados do clima do local do dispositivo
   void _fetchWeatherCurrentLocation() async {
     setState(() {
       _isLoading = true;
@@ -52,6 +72,7 @@ class _WeatherViewState extends State<WeatherView> {
       weather.preciseLocation = await _weatherService.getPreciseLocation();
       setState(() {
         _weather = weather;
+        dev.log(_weather.toString());
       });
     } catch (e) {
       dev.log(e.toString());
@@ -60,6 +81,7 @@ class _WeatherViewState extends State<WeatherView> {
     }
   }
 
+  // carregar dados do clima de uma cidade escolhida
   void _fetchWeather(String cidade) async {
     setState(() {
       _isLoading = true;
@@ -68,6 +90,7 @@ class _WeatherViewState extends State<WeatherView> {
       final weather = await _weatherService.getWeather(cidade);
       setState(() {
         _weather = weather;
+         dev.log(_weather.toString());
       });
     } catch (e) {
       dev.log(e.toString());
@@ -78,26 +101,23 @@ class _WeatherViewState extends State<WeatherView> {
     }
   }
 
-  String getWeatherAnimation(String? mainCondition) {
-    if (mainCondition == null) return 'assets/sunny.json';
+  // carregar animacao dependendo da condicao climatica
+  String getWeatherAnimation(int? conditionID) {
+    if (conditionID == null) return 'assets/clear_day.json';
 
-    switch (mainCondition.toLowerCase()) {
-      case 'clouds':
-      case 'mist':
-      case 'smoke':
-      case 'haze':
-      case 'dust':
-      case 'fog':
-        return 'assets/cloudy.json';
-      case 'rain':
-      case 'drizzle':
-        return 'assets/rainy.json';
-      case 'thunderstorm':
-        return 'assets/stomry.json';
-      case 'clear':
-        return 'assets/sunny.json';
+    switch (conditionID) {
+      case (>800 && <803) || (>700 && < 760):
+        return 'assets/clouds.json'; //nuvers+sol
+      case 803 || 804:
+        return 'assets/clouds.json'; //nuvers+sol
+      case >=300 && < 600:
+        return 'assets/rain_day.json';
+      case >=200 && <300:
+        return 'assets/storm.json';
+      case 800:
+        return 'assets/clear_day.json';
       default:
-        return 'assets/sunny.json';
+        return 'assets/clear_day.json';
     }
   }
 
@@ -158,13 +178,24 @@ class _WeatherViewState extends State<WeatherView> {
                 ],
               ),
               const SizedBox(height: 10),
-              Text(_weather?.preciseLocation ?? ""),
+              // Text(_weather?.preciseLocation != null ? '${_weather!.preciseLocation}' : ''),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_weather?.preciseLocation != null)
+                    const Icon(Icons.location_on_outlined),
+                  Text(_weather?.preciseLocation != null
+                      ? '${_weather!.preciseLocation}'
+                      : ''),
+                ],
+              ),
+
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (!_isLoading)
-                      Lottie.asset(getWeatherAnimation(_weather?.condition)),
+                      Lottie.asset(getWeatherAnimation(_weather?.conditionID)),
                   ],
                 ),
               ),
